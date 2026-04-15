@@ -60,5 +60,5 @@ Troubleshooting
 
 Author
 
-Aadishakti Murlidhar Muley
-Final Year Project
+Chandra Mohan Singh
+BCA (Data Science)
