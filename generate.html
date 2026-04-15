@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Interview Guide</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #1e88e5;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    main {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 600;
+    }
+    select, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+    #output {
+      margin-top: 30px;
+      font-size: 16px;
+      color: #333;
+    }
+    h3 {
+      margin-top: 20px;
+      color: #1e88e5;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #777;
+      position: relative;
+      padding: 20px;
+    }
+    .student-name {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>AI Interview Guide</h1>
+  <p>Generate company-specific interview questions using AI</p>
+</header>
+
+<main>
+  <form id="questionForm">
+    <label for="company">Select Company</label>
+    <select id="company" required>
+      <option value="TCS">TCS</option>
+      <option value="Infosys">Infosys</option>
+      <option value="Wipro">Wipro</option>
+      <option value="Accenture">Accenture</option>
+      <option value="Google">Google</option>
+      <option value="Amazon">Amazon</option>
+      <option value="Microsoft">Microsoft</option>
+      <option value="Capgemini">Capgemini</option>
+      <option value="Cognizant">Cognizant</option>
+      <option value="IBM">IBM</option>
+    </select>
+
+    <label for="role">Select Role</label>
+    <select id="role" required>
+      <option value="Software Developer">Software Developer</option>
+      <option value="System Analyst">System Analyst</option>
+      <option value="Support Engineer">Support Engineer</option>
+      <option value="DevOps Engineer">DevOps Engineer</option>
+      <option value="Data Scientist">Data Scientist</option>
+      <option value="Business Analyst">Business Analyst</option>
+      <option value="Cloud Engineer">Cloud Engineer</option>
+      <option value="Security Analyst">Security Analyst</option>
+    </select>
+
+    <label for="level">Select Level</label>
+    <select id="level" required>
+      <option value="Easy">Easy</option>
+      <option value="Medium">Medium</option>
+      <option value="Hard">Hard</option>
+    </select>
+
+    <button type="submit">Generate Questions</button>
+  </form>
+
+  <div id="output"></div>
+
+  <button id="startTestBtn" style="display: none; margin-top: 20px;" onclick="goToTest()">Start Test</button>
+</main>
+
+<footer>
+  <p>© 2025 AI Interview Guide</p>
+  <div class="student-name">Developed by Aadishakti Murlidhar Muley</div>
+</footer>
+
+<script>
+  document.getElementById('questionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const company = document.getElementById('company').value;
+    const role = document.getElementById('role').value;
+    const level = document.getElementById('level').value;
+
+    const prompt = `Generate ${level} level interview questions for the role of ${role} at ${company}.`;
+
+    document.getElementById('output').innerHTML = 'Generating questions...';
+
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, company, role, level })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        document.getElementById('output').innerHTML = `<span style="color:red;">${data.error}</span>`;
+        return;
+      }
+
+      const questions = data.questions;
+
+      if (!questions || questions.length === 0) {
+        document.getElementById('output').innerHTML = "No valid questions generated.";
+        document.getElementById('startTestBtn').style.display = "none";
+        return;
+      }
+
+      // Split questions into sections (e.g., every 3 questions per section)
+      const sectionTitles = [
+        "General Questions",
+        "Technical Concepts",
+        "Programming",
+        "Data Structures",
+        "System Design",
+        "Behavioral",
+        "Project Experience"
+      ];
+
+      let outputHtml = `<h3>Generated Questions:</h3>`;
+      let count = 1;
+
+      for (let i = 0; i < questions.length; i += 3) {
+        const section = sectionTitles[Math.floor(i / 3)] || `Section ${Math.floor(i / 3) + 1}`;
+        outputHtml += `<h4>${section}</h4><ul>`;
+        for (let j = i; j < i + 3 && j < questions.length; j++) {
+          outputHtml += `<li><strong>Q${count++}.</strong> ${questions[j]}</li>`;
+        }
+        outputHtml += `</ul>`;
+      }
+
+      document.getElementById('output').innerHTML = outputHtml;
+      document.getElementById('startTestBtn').style.display = "block";
+    })
+    .catch(err => {
+      document.getElementById('output').innerHTML = `<span style="color:red;">Error: Unable to reach backend</span>`;
+      console.error(err);
+    });
+  });
+
+  function goToTest() {
+    window.location.href = "/test";
+  }
+</script>
+</body>
+</html>

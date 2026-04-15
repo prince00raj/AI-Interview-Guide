@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interview Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    main {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #1e88e5;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
+    }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    button {
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+    #result {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h2>Interview Test for {{ role }} at {{ company }} ({{ level }})</h2>
+    <form id="testForm">
+      {% for question in questions[:7] %}
+        <div>
+          <label for="q{{ loop.index }}">Q{{ loop.index }}. {{ question }}</label>
+          <textarea id="q{{ loop.index }}" name="q{{ loop.index }}"></textarea>
+        </div>
+      {% endfor %}
+      <button type="submit">Submit Answers</button>
+    </form>
+    <div id="result"></div>
+   
+  </main>
+
+  <script>
+    document.getElementById('testForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+      const answers = {};
+      const questions = {{ questions[:7]|tojson }}; // limit to first 7 questions in JS too
+
+      questions.forEach((q, i) => {
+        const a = formData.get(`q${i + 1}`)?.trim() || "";
+        answers[q] = a;
+      });
+
+      document.getElementById('result').innerText = "Evaluating your answers...";
+
+      fetch('/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('result').innerHTML = `<span style="color:red;">${data.error}</span>`;
+        } else {
+          document.getElementById('result').innerText = `Evaluation result:\n\n${data.feedback}`;
+          
+        }
+      })
+      .catch(err => {
+        document.getElementById('result').innerHTML = `<span style="color:red;">An error occurred: ${err.message}</span>`;
+      });
+    });
+
+    function goToTest() {
+      window.location.href = '/test';
+    }
+  </script>
+</body>
+</html>
